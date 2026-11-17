@@ -46,7 +46,7 @@
     rows = <5>;
     col-offset = <6>;
 
- map = <
+    map = <
         RC(0,7) RC(0,8) RC(0,9) RC(0,10) RC(0,11) RC(0,12)
         RC(1,7) RC(1,8) RC(1,9) RC(1,10) RC(1,11) RC(1,12)
         RC(2,7) RC(2,8) RC(2,9) RC(2,10) RC(2,11) RC(2,12)
@@ -54,8 +54,6 @@
         RC(4,6) RC(4,7)                           RC(4,10) RC(4,11)
     >;
 };
-
-
 
 &pinctrl {
     spi1_default: spi1_default {
@@ -75,7 +73,7 @@
         };
     };
 
-       i2c0_default: i2c0_default {
+    i2c0_default: i2c0_default {
         group1 {
             psels = <NRF_PSEL(TWIM_SDA, 0, 17)>,
                     <NRF_PSEL(TWIM_SCL, 0, 20)>;
@@ -89,6 +87,7 @@
             low-power-enable;
         };
     };
+};
 
 &spi1 {
     status = "okay";
