@@ -5,6 +5,7 @@ on:
   push:
     paths:
       - 'config/**'
+      - 'boards/**'
       - '.github/workflows/build.yml'
 
 jobs:
@@ -68,11 +69,11 @@ jobs:
             /usr/bin/python3 -m pip install --break-system-packages -r dependencies/zephyr/scripts/requirements.txt || true
           fi
 
-      # 7. 右手専用を指定してコンパイル (環境変数を引き継いで実行)
-      - name: Build Right Hand Only (Central)
+      # 7. 右手専用・ZMK Studio対応を指定してコンパイル
+      - name: Build Right Hand Only (Central + ZMK Studio)
         run: |
           cd dependencies/zmk/app
-          west build -b nice_nano -- -DSHIELD=keyball61_right -DZMK_CONFIG="${{ github.workspace }}/config"
+          west build -b nice_nano -S studio-rpc-usb-uart -- -DSHIELD=keyball61_right -DZMK_CONFIG="${{ github.workspace }}/config" -DCONFIG_ZMK_STUDIO=y
 
       # 8. 完成した右手単体用の zmk.uf2 を成果物として保存
       - name: Upload Artifacts
