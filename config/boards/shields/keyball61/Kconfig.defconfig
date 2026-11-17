@@ -3,16 +3,13 @@ if SHIELD_KEYBALL61_RIGHT
 config ZMK_KEYBOARD_NAME
 	default "Keyball61"
 
-config ZMK_SPLIT_ROLE_CENTRAL
-	default y
-
 endif
 
-if SHIELD_KEYBALL61_LEFT || SHIELD_KEYBALL61_RIGHT
+if SHIELD_KEYBALL61_LEFT
 
 config ZMK_SPLIT
 	default y
-	
+
 endif
 
 if ZMK_DISPLAY
@@ -44,4 +41,4 @@ choice LV_COLOR_DEPTH
     default LV_COLOR_DEPTH_1
 endchoice
 
-endif 
+endif
