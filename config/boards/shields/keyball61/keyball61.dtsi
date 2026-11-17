@@ -50,11 +50,11 @@
             ;
     };
 
-&default_transform {
-    compatible = "zmk,matrix-transform";
-    columns = <14>;
-    rows = <5>;
-    col-offset = <6>;
+    default_transform: keymap_transform_0 {
+        compatible = "zmk,matrix-transform";
+        columns = <14>;
+        rows = <5>;
+        col-offset = <6>;
 
     map = <
         RC(0,7) RC(0,8) RC(0,9) RC(0,10) RC(0,11) RC(0,12)
@@ -63,8 +63,7 @@
         RC(3,6) RC(3,7) RC(3,8) RC(3,9)  RC(3,10) RC(3,11) RC(3,12)
         RC(4,6) RC(4,7)                           RC(4,11) RC(4,12)
     >;
-};
-
+    };
 
 	
     kscan0: kscan {
