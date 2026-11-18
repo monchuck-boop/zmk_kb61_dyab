@@ -18,7 +18,7 @@
     kscan_duplex: kscan_duplex {
         compatible = "zmk,kscan-gpio-duplex";
         wakeup-source;
-        poll-period-ms = <15>;
+        poll-period-ms = <20>;
         row-gpios
             = <&pro_micro 4 GPIO_ACTIVE_HIGH>
             , <&pro_micro 5 GPIO_ACTIVE_HIGH>
@@ -77,10 +77,8 @@
         group1 {
             psels = <NRF_PSEL(TWIM_SDA, 0, 17)>,
                     <NRF_PSEL(TWIM_SCL, 0, 20)>;
-            bias-pull-up;
         };
     };
-
 
     i2c0_sleep: i2c0_sleep {
         group1 {
@@ -118,7 +116,7 @@
     pinctrl-0 = <&i2c0_default>;
     pinctrl-1 = <&i2c0_sleep>;
     pinctrl-names = "default", "sleep";
-    clock-frequency = <I2C_BITRATE_FAST>;
+    clock-frequency = <I2C_BITRATE_STANDARD>;
 
     oled: ssd1306@3c {
         compatible = "solomon,ssd1306fb";
@@ -131,13 +129,10 @@
         multiplex-ratio = <31>;
         segment-remap;
         com-invdir;
-        com-sequential;
         inversion-on;
         prechargep = <0x22>;
     };
 };
-
-
 
 / {
     trackball_listener {
