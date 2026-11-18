@@ -30,22 +30,14 @@ struct kscan_duplex_data {
     struct duplex_key_state *states;
 };
 
-static void kscan_duplex_discharge_and_idle(const struct kscan_duplex_config *cfg) {
-    /* 残留電荷を強制的にLOWへ逃がしてからINPUTに戻す（ゴースト防止） */
+static void kscan_duplex_reset_all_low(const struct kscan_duplex_config *cfg) {
     for (size_t r = 0; r < cfg->row_count; r++) {
         gpio_pin_configure_dt(&cfg->rows[r], GPIO_OUTPUT_INACTIVE);
     }
     for (size_t c = 0; c < cfg->col_count; c++) {
         gpio_pin_configure_dt(&cfg->cols[c], GPIO_OUTPUT_INACTIVE);
     }
-    k_busy_wait(15);
-
-    for (size_t r = 0; r < cfg->row_count; r++) {
-        gpio_pin_configure_dt(&cfg->rows[r], GPIO_INPUT);
-    }
-    for (size_t c = 0; c < cfg->col_count; c++) {
-        gpio_pin_configure_dt(&cfg->cols[c], GPIO_INPUT);
-    }
+    k_busy_wait(20);
 }
 
 static void kscan_duplex_update_state(const struct device *dev, size_t r, size_t c, bool raw_pressed) {
@@ -77,10 +69,15 @@ static void kscan_duplex_update_state(const struct device *dev, size_t r, size_t
 static void kscan_duplex_read(const struct device *dev) {
     const struct kscan_duplex_config *cfg = dev->config;
 
+    /* 全ピンを一度0Vに強制放電 */
+    kscan_duplex_reset_all_low(cfg);
+
     /* Phase 1: row2col (論理列 0 .. col_count - 1 : 左側の列) */
     for (size_t c = 0; c < cfg->col_count; c++) {
         gpio_pin_configure_dt(&cfg->cols[c], GPIO_INPUT | GPIO_PULL_DOWN);
     }
+    k_busy_wait(15);
+
     for (size_t r = 0; r < cfg->row_count; r++) {
         gpio_pin_configure_dt(&cfg->rows[r], GPIO_OUTPUT_ACTIVE);
         k_busy_wait(30);
@@ -89,16 +86,18 @@ static void kscan_duplex_read(const struct device *dev) {
             kscan_duplex_update_state(dev, r, c, pressed);
         }
         gpio_pin_configure_dt(&cfg->rows[r], GPIO_OUTPUT_INACTIVE);
-        k_busy_wait(10);
-        gpio_pin_configure_dt(&cfg->rows[r], GPIO_INPUT);
+        k_busy_wait(15);
     }
 
-    kscan_duplex_discharge_and_idle(cfg);
+    /* Phase 1 と Phase 2 の間で全ピンを0Vへリセット */
+    kscan_duplex_reset_all_low(cfg);
 
     /* Phase 2: col2row (論理列 col_count .. 2*col_count - 1 : 右側の列) */
     for (size_t r = 0; r < cfg->row_count; r++) {
         gpio_pin_configure_dt(&cfg->rows[r], GPIO_INPUT | GPIO_PULL_DOWN);
     }
+    k_busy_wait(15);
+
     for (size_t c = 0; c < cfg->col_count; c++) {
         gpio_pin_configure_dt(&cfg->cols[c], GPIO_OUTPUT_ACTIVE);
         k_busy_wait(30);
@@ -107,11 +106,11 @@ static void kscan_duplex_read(const struct device *dev) {
             kscan_duplex_update_state(dev, r, cfg->col_count + c, pressed);
         }
         gpio_pin_configure_dt(&cfg->cols[c], GPIO_OUTPUT_INACTIVE);
-        k_busy_wait(10);
-        gpio_pin_configure_dt(&cfg->cols[c], GPIO_INPUT);
+        k_busy_wait(15);
     }
 
-    kscan_duplex_discharge_and_idle(cfg);
+    /* スキャン終了後も全ピンを0V（アイドル）で保持 */
+    kscan_duplex_reset_all_low(cfg);
 }
 
 static void kscan_duplex_work_handler(struct k_work *work) {
@@ -150,7 +149,7 @@ static int kscan_duplex_init(const struct device *dev) {
     const struct kscan_duplex_config *cfg = dev->config;
 
     data->dev = dev;
-    kscan_duplex_discharge_and_idle(cfg);
+    kscan_duplex_reset_all_low(cfg);
     k_work_init_delayable(&data->work, kscan_duplex_work_handler);
     return 0;
 }
