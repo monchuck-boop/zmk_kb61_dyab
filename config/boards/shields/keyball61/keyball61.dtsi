@@ -4,10 +4,9 @@
 #include <input/processors/runtime-input-processor.dtsi>
 #include <dt-bindings/zmk/matrix_transform.h>
 
-
 / {
     chosen {
-        zephyr,display = &oled;
+        // OLEDを使う時だけ有効にするため、一旦削除
         zmk,physical-layout = &keyball_physical_layout;
     };
     
@@ -15,7 +14,7 @@
         compatible = "zmk,physical-layout";
         display-name = "Default";
         transform = <&default_transform>;
-        kscan = <&kscan0>;
+        kscan = <&kscan_duplex>;
 
         keys  //                     w   h    x    y     rot    rx    ry
             = <&key_physical_attrs 100 100 1000   45       0     0     0>
@@ -56,29 +55,12 @@
         rows = <5>;
         col-offset = <6>;
 
-    map = <
-        RC(0,7) RC(0,8) RC(0,9) RC(0,11) RC(0,12) RC(0,13)
-        RC(1,7) RC(1,8) RC(1,9) RC(1,11) RC(1,12) RC(1,13)
-        RC(2,7) RC(2,8) RC(2,9) RC(2,11) RC(2,12) RC(2,13)
-        RC(3,6) RC(3,7) RC(3,8) RC(3,9)  RC(3,11) RC(3,12) RC(3,13)
-        RC(4,6) RC(4,7)                           RC(4,12) RC(4,13)
-    >;
-    };
-
-	
-    kscan0: kscan {
-        compatible = "zmk,kscan-gpio-matrix";
-        label = "KSCAN";
-        wakeup-source;
-
-        diode-direction = "col2row";
-    };
-};
-
-&spi1 {
-    trackball: trackball@0 {
-        compatible = "cormoran,pmw3610";
-        reg = <0>;
-        status = "disabled";
+        map = <
+            RC(0,7) RC(0,8) RC(0,9) RC(0,11) RC(0,12) RC(0,13)
+            RC(1,7) RC(1,8) RC(1,9) RC(1,11) RC(1,12) RC(1,13)
+            RC(2,7) RC(2,8) RC(2,9) RC(2,11) RC(2,12) RC(2,13)
+            RC(3,6) RC(3,7) RC(3,8) RC(3,9)  RC(3,11) RC(3,12) RC(3,13)
+            RC(4,6) RC(4,7)                           RC(4,12) RC(4,13)
+        >;
     };
 };
