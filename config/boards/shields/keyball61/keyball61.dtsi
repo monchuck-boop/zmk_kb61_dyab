@@ -6,7 +6,6 @@
 
 / {
     chosen {
-        // OLEDを使う時だけ有効にするため、一旦削除
         zmk,physical-layout = &keyball_physical_layout;
     };
     
