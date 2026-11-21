@@ -53,14 +53,16 @@ jobs:
           echo "EXTRA_CFLAGS=-Wno-overflow -Wno-error -Wno-format -Wno-error=implicit-function-declaration -Wno-implicit-function-declaration -Wno-discarded-qualifiers -Wno-error=return-mismatch -Wno-return-mismatch" >> $GITHUB_ENV
           echo "ZEPHYR_EXTRA_CFLAGS=-Wno-overflow -Wno-error -Wno-format -Wno-error=implicit-function-declaration -Wno-implicit-function-declaration -Wno-discarded-qualifiers -Wno-error=return-mismatch -Wno-return-mismatch" >> $GITHUB_ENV
 
-      # 5. リポジトリ内の設定をもとに環境を初期化
+          # 5. リポジトリ内の設定をもとに環境を初期化
       - name: West Init
         run: |
           west init -l config --mf west-standalone.yml
           west update
           west zephyr-export
-          cp config/src/kscan_gpio_duplex.c dependencies/zmk/app/src/
-          echo "target_sources(app PRIVATE src/kscan_gpio_duplex.c)" >> dependencies/zmk/app/CMakeLists.txt
+          # 一時的に kscan_gpio_duplex.c の組み込みを停止してクラッシュ原因を切り分ける
+          # cp config/src/kscan_gpio_duplex.c dependencies/zmk/app/src/
+          # echo "target_sources(app PRIVATE src/kscan_gpio_duplex.c)" >> dependencies/zmk/app/CMakeLists.txt
+
 
       # 6. Zephyrコアのスクリプト要求ファイルをシステムPython側へ一括インストール
       - name: Install Zephyr Additional Python Requirements
