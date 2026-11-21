@@ -1,18 +1,11 @@
 manifest:
-  defaults:
-    remote: zmkfirmware
-  remotes:
-    - name: zmkfirmware
-      url-base: https://github.com
-    - name: badjeff
-      url-base: https://github.com
   projects:
     - name: zmk
-      remote: zmkfirmware
+      url: https://github.com
       revision: main
       import: app/west.yml
     - name: zmk-pmw3610-driver
-      remote: badjeff
+      url: https://github.com
       revision: main
   self:
     path: config
