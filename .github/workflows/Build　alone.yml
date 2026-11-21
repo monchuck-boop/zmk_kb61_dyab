@@ -42,26 +42,22 @@ jobs:
         run: |
           sudo apt-get install -y gcc-arm-none-eabi bsdmainutils ninja-build protobuf-compiler device-tree-compiler
 
-      # 4. Zephyrにツールチェーン、使用するPython、および安全なエラー無視フラグを環境変数に固定する
-      - name: Set Toolchain, Python & Global CFLAGS
+      # 4. Zephyrにツールチェーンと使用するPythonを固定（危険なエラー無視フラグを削除）
+      - name: Set Toolchain & Python
         run: |
           echo "ZEPHYR_TOOLCHAIN_VARIANT=gnuarmemb" >> $GITHUB_ENV
           echo "GNUARMEMB_TOOLCHAIN_PATH=/usr" >> $GITHUB_ENV
           echo "WEST_PYTHON=/usr/bin/python3" >> $GITHUB_ENV
           echo "PYTHON_EXECUTABLE=/usr/bin/python3" >> $GITHUB_ENV
-          
-          echo "EXTRA_CFLAGS=-Wno-overflow -Wno-error -Wno-format -Wno-error=implicit-function-declaration -Wno-implicit-function-declaration -Wno-discarded-qualifiers -Wno-error=return-mismatch -Wno-return-mismatch" >> $GITHUB_ENV
-          echo "ZEPHYR_EXTRA_CFLAGS=-Wno-overflow -Wno-error -Wno-format -Wno-error=implicit-function-declaration -Wno-implicit-function-declaration -Wno-discarded-qualifiers -Wno-error=return-mismatch -Wno-return-mismatch" >> $GITHUB_ENV
 
-          # 5. リポジトリ内の設定をもとに環境を初期化
+      # 5. リポジトリ内の設定をもとに環境を初期化
       - name: West Init
         run: |
           west init -l config --mf west-standalone.yml
           west update
           west zephyr-export
-          # 一時的に kscan_gpio_duplex.c の組み込みを停止してクラッシュ原因を切り分ける
-          # cp config/src/kscan_gpio_duplex.c dependencies/zmk/app/src/
-          # echo "target_sources(app PRIVATE src/kscan_gpio_duplex.c)" >> dependencies/zmk/app/CMakeLists.txt
+          cp config/src/kscan_gpio_duplex.c dependencies/zmk/app/src/
+          echo "target_sources(app PRIVATE src/kscan_gpio_duplex.c)" >> dependencies/zmk/app/CMakeLists.txt
 
 
       # 6. Zephyrコアのスクリプト要求ファイルをシステムPython側へ一括インストール
@@ -71,11 +67,12 @@ jobs:
             /usr/bin/python3 -m pip install --break-system-packages -r dependencies/zephyr/scripts/requirements.txt || true
           fi
 
-           # 7. 右手専用としてコンパイル（HWMv2形式のボード名を指定し、Studioオプションを除外）
+         # 7. 右手専用としてコンパイル（ZMK公式標準の nice_nano_v2 を指定）
       - name: Build Right Hand Only
         run: |
           cd dependencies/zmk/app
-          west build -b nice_nano//zmk -- -DSHIELD=keyball61_right -DZMK_CONFIG="${{ github.workspace }}/config"
+          west build -b nice_nano_v2 -- -DSHIELD=keyball61_right -DZMK_CONFIG="${{ github.workspace }}/config"
+
 
       # 8. 完成した右手単体用の zmk.uf2 を成果物として保存
       - name: Upload Artifacts
