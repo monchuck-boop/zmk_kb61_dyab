@@ -1,61 +1,54 @@
-/*
- * Copyright (c) 2020 ZMK Contributors
- *
- * SPDX-License-Identifier: MIT
- */
 #include <behaviors.dtsi>
 #include "keyball61.dtsi"
 
-// 【重要】NFCピン(P0.09, P0.10)をトラックボール用のGPIOとして解放する
 &uicr {
     nfct-pins-as-gpios;
 };
 
 / {
     chosen {
-        // 切り分けのため、ダミーのkscanを割り当てる
-        zmk,kscan = &kscan_mock;
+        zmk,kscan = &kscan_duplex;
     };
 
-    kscan_mock: kscan_mock {
-        compatible = "zmk,kscan-mock";
-        columns = <14>;
-        rows = <5>;
-        events = <>;
+    kscan_duplex: kscan_duplex {
+        compatible = "zmk,kscan-gpio-duplex";
+        wakeup-source;
+        poll-period-ms = <20>;
+        row-gpios
+            = <&pro_micro 4 GPIO_ACTIVE_HIGH>
+            , <&pro_micro 5 GPIO_ACTIVE_HIGH>
+            , <&pro_micro 6 GPIO_ACTIVE_HIGH>
+            , <&pro_micro 7 GPIO_ACTIVE_HIGH>
+            , <&pro_micro 8 GPIO_ACTIVE_HIGH>
+            ;
+
+        col-gpios
+            = <&pro_micro 18 GPIO_ACTIVE_HIGH>
+            , <&pro_micro 19 GPIO_ACTIVE_HIGH>
+            , <&pro_micro 20 GPIO_ACTIVE_HIGH>
+            , <&pro_micro 21 GPIO_ACTIVE_HIGH>
+            ;
     };
 };
 
 &keyball_physical_layout {
-    kscan = <&kscan_mock>;
-};
-
-&default_transform {
-    compatible = "zmk,matrix-transform";
-    columns = <14>;
-    rows = <5>;
-    col-offset = <6>;
-
-    map = <
-        RC(0,7) RC(0,8) RC(0,9) RC(0,11) RC(0,12) RC(0,13)
-        RC(1,7) RC(1,8) RC(1,9) RC(1,11) RC(1,12) RC(1,13)
-        RC(2,7) RC(2,8) RC(2,9) RC(2,11) RC(2,12) RC(2,13)
-        RC(3,6) RC(3,7) RC(3,8) RC(3,9)  RC(3,11) RC(3,12) RC(3,13)
-        RC(4,6) RC(4,7)                           RC(4,12) RC(4,13)
-    >;
+    kscan = <&kscan_duplex>;
 };
 
 &pinctrl {
     spi1_default: spi1_default {
         group1 {
             psels = <NRF_PSEL(SPIM_SCK, 1, 13)>,
-                    <NRF_PSEL(SPIM_MOSI, 0, 10)>;
+                    <NRF_PSEL(SPIM_MOSI, 0, 10)>,
+                    <NRF_PSEL(SPIM_MISO, 0, 10)>;
         };
     };
 
     spi1_sleep: spi1_sleep {
         group1 {
             psels = <NRF_PSEL(SPIM_SCK, 1, 13)>,
-                    <NRF_PSEL(SPIM_MOSI, 0, 10)>;
+                    <NRF_PSEL(SPIM_MOSI, 0, 10)>,
+                    <NRF_PSEL(SPIM_MISO, 0, 10)>;
             low-power-enable;
         };
     };
@@ -71,14 +64,14 @@
 
     trackball: trackball@0 {
         status = "okay";
-        compatible = "cormoran,pmw3610";
+        compatible = "pixart,pmw3610";
         reg = <0>;
         spi-max-frequency = <2000000>;
         irq-gpios = <&gpio1 11 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
+        cpi = <600>;
         evt-type = <INPUT_EV_REL>;
         x-input-code = <INPUT_REL_X>;
         y-input-code = <INPUT_REL_Y>;
-        disable-burst-read;
     };
 };
 
@@ -86,16 +79,15 @@
     trackball_listener {
         compatible = "zmk,input-listener";
         device = <&trackball>;
-        input-processors = <&mouse_runtime_input_processor &scroll_runtime_input_processor>;
 
         scroll_slow {
             layers = <5>;
-            input-processors = <&zip_xy_scaler 1 2 &scroll_runtime_input_processor>;
+            input-processors = <&zip_xy_to_scroll_mapper>, <&zip_xy_scaler 1 2>;
         };
 
         snipe {
             layers = <6>;
-            input-processors = <&zip_xy_scaler 1 2 &mouse_runtime_input_processor>;
+            input-processors = <&zip_xy_scaler 1 2>;
         };
     };
 };
