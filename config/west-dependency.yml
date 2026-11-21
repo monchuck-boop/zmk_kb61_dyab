@@ -64,7 +64,7 @@ manifest:
     # Diagnostics tab
     - name: zmk-feature-module-physical-layout
     - name: zmk-feature-device-info
-    - name: zmk-feature-watchdog
+    #- name: zmk-feature-watchdog
     # Keymap tab - runtime macro / combo
     - name: zmk-feature-runtime-macro
       import: true
