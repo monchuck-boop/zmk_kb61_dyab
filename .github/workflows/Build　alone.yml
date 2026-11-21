@@ -66,11 +66,11 @@ jobs:
             /usr/bin/python3 -m pip install --break-system-packages -r zephyr/scripts/requirements.txt || true
           fi
 
-      # 7. 右手専用としてコンパイル（ZMK公式標準の nice_nano_v2 を指定）
+      # 7. 右手専用としてコンパイル（ZMK公式 HWMv2 形式のボード名を指定）
       - name: Build Right Hand Only
         run: |
           cd zmk/app
-          west build -b nice_nano_v2 -- -DSHIELD=keyball61_right -DZMK_CONFIG="${{ github.workspace }}/config"
+          west build -b nice_nano//zmk -- -DSHIELD=keyball61_right -DZMK_CONFIG="${{ github.workspace }}/config"
 
       # 8. 完成した右手単体用の zmk.uf2 を成果物として保存
       - name: Upload Artifacts
